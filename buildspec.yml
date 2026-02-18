@@ -1,38 +1,36 @@
 version: 0.2
 
-env:
-  variables:
-    AWS_DEFAULT_REGION: us-east-1
-    REPOSITORY_URI: 687123200930.dkr.ecr.us-east-1.amazonaws.com/springboot-app
-    DOCKER_CONTAINER_NAME: springboot-app
-
 phases:
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo Logging in to Amazon ECR....
       - aws --version
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 687123200930.dkr.ecr.us-east-1.amazonaws.com
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 687123200930.dkr.ecr.us-east-1.amazonaws.com
+      - REPOSITORY_URI=687123200930.dkr.ecr.us-east-1.amazonaws.com/springboot-app
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
 
   build:
     commands:
-      - echo Build started on `date`
+      - echo Build started on date
       - echo Building the JAR file...
       - mvn clean install
-      - echo Building Docker image...
+      - echo Building the Docker image...
       - docker build -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
     commands:
-      - echo Build completed on `date`
-      - echo Pushing Docker images to ECR...
+      - echo Build completed on date
+      - echo Pushing the Docker image to ECR...
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo Creating imagedefinitions.json...
+      - echo Writing image definitions file...
+      - DOCKER_CONTAINER_NAME=springboot-app
       - printf '[{"name":"%s","imageUri":"%s"}]' $DOCKER_CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - echo Displaying imagedefinitions.json content
       - cat imagedefinitions.json
 
 artifacts:
   files:
     - imagedefinitions.json
+    - target/springboot-aws-deploy.jar
