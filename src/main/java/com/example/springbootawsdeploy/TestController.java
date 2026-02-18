@@ -1,11 +1,4 @@
-package com.example.springbootawsdeploy;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-@Controller   // Change from @RestController to @Controller for HTML
+@RestController
 @RequestMapping("/demo")
 public class TestController {
 
@@ -18,9 +11,9 @@ public class TestController {
     public String getMessage() {
         return "Second message from AWS Ecs";
     }
-
-    @GetMapping("/")   // <-- Add this for root
+    
+    @GetMapping("/")
     public String home() {
-        return "index";   // templates/index.html serve karega
+        return "Welcome to AWS ECS!";
     }
 }
